@@ -11,6 +11,7 @@ import * as process from 'process';
 
 const PLATFORM = process.platform;
 const EXE_NAME = PLATFORM === 'win32' ? 'argocd.exe' : 'argocd';
+const ARCH = os.arch();
 const ASSET_DEST = path.join(os.homedir(), EXE_NAME);
 
 enum Executable {
@@ -21,9 +22,9 @@ enum Executable {
   netbsd,
   openbsd,
   sunos,
-  darwin = 'argocd-darwin-amd64',
-  linux = 'argocd-linux-amd64',
-  win32 = 'argocd-windows-amd64.exe',
+  darwin = `argocd-darwin-ARCH`,
+  linux = `argocd-linux-ARCH`,
+  win32 = `argocd-windows-ARCH.exe`,
 }
 
 export default class ArgoCD {
@@ -49,7 +50,7 @@ export default class ArgoCD {
     // If hitting GitHub API rate limit, add `GITHUB_TOKEN` to raise limit
     const octoConfig = process.env.GITHUB_TOKEN ? {authStrategy: createActionAuth} : {};
     const octokit = new Octokit(octoConfig);
-    const executable = Executable[PLATFORM];
+    const executable = Executable[PLATFORM].replace('ARCH', ARCH);
 
     try {
       const releases = await octokit.repos.getReleaseByTag({
